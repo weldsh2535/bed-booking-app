@@ -1,11 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 
+import '../models/rooms.dart';
 import '../models/tasks.dart';
 
 class DBHelper {
   static Database? _db;
   static final int _version = 1;
   static final String _tableName = "tasks";
+  static final String _roomTableName ="rooms";
   static Future<void> initDb() async {
     if (_db != null) {
       return;
@@ -31,11 +33,12 @@ class DBHelper {
             //create 
               // Create Room
         await db.execute('''
-          CREATE TABLE Rooms (
+          CREATE TABLE $_roomTableName (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            roomNumber INTEGER,
-            description TEXT,
-            date TEXT
+            name TEXT,
+            numberOfPeople INTEGER,
+            type TEXT,
+            color INTEGER
           )
         ''');
       });
@@ -62,6 +65,30 @@ class DBHelper {
   static update(int id) async {
     return await _db!.rawUpdate('''
   UPDATE tasks 
+  SET color = ?
+  WHERE id =?
+''', [1, id]);
+  }
+
+  //rooms
+  static Future<int> insertRooms(Rooms? rooms) async {
+    print("insert function called");
+    print(rooms!.toJson());
+    return await _db?.insert(_roomTableName, rooms!.toJson()) ?? 1;
+  }
+
+  static Future<List<Map<String, dynamic>>> queryRooms() async {
+    print("query function called");
+    return await _db!.query(_roomTableName);
+  }
+
+  static deleteRoom(Rooms rooms) async {
+    return await _db!.delete(_roomTableName, where: 'id=?', whereArgs: [rooms.id]);
+  }
+
+  static updateRoom(int id) async {
+    return await _db!.rawUpdate('''
+  UPDATE rooms 
   SET color = ?
   WHERE id =?
 ''', [1, id]);
